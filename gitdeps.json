@@ -1,0 +1,6 @@
+{
+  "helloworld": {
+    "remote": "https://github.com/go-training/helloworld",
+    "branch": "master"
+  }
+}

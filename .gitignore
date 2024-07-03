@@ -1,0 +1,16 @@
+# Define submodule gitignore
+
+/helloworld
+
+
+# Build output
+
+gitdeps
+gitdeps.exe
+
+
+# Other gitignore entries
+.DS_Store
+.idea
+.vscode
+.vs
