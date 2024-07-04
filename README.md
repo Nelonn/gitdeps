@@ -9,14 +9,32 @@ Zero dependencies!
 
 ## Try it right now!
 
+Clone this repository as example gitdeps project
+
 ```shell
 git clone https://github.com/Nelonn/gitdeps
-go build gitdeps.go
-./gitdeps
+cd gitdeps
 ```
-Or `.\gitdeps.exe`
 
-This repository contains this file `gitdeps.json`:
+Run the getdeps command in a convenient way:
+
+- Build it yourself with `go` installed in your system:
+```shell
+go build gitdeps.go
+./gitdeps or .\gitdeps.exe
+```
+
+- Or use [Homebrew](https://brew.sh/) for Linux or macOS:
+
+```shell
+brew tap Nelonn/tap
+brew install gitdeps
+gitdeps
+```
+
+After running the command, the repository is cloned to the `helloworld` folder
+
+This repository contains this `gitdeps.json`:
 
 ```json
 {

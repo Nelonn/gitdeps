@@ -5,6 +5,7 @@
 
 # Build output
 
+/dist
 gitdeps
 gitdeps.exe
 

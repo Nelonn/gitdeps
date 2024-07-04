@@ -12,6 +12,9 @@ import (
 	"strings"
 )
 
+// Version is dynamically set by the toolchain
+var Version = "DEV"
+
 func main() {
 	if len(os.Args) > 1 && (StrArrContains(os.Args[1:], "-h") || StrArrContains(os.Args[1:], "--help")) {
 		PrintHelp()
@@ -26,6 +29,8 @@ func PrintHelp() {
 	fmt.Println("")
 	fmt.Println("Options:")
 	fmt.Println("  --skip  Skip existing directories")
+	fmt.Println("")
+	fmt.Println("gitdeps " + Version)
 }
 
 func Execute(args []string) {
