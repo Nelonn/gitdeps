@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -28,27 +29,33 @@ func PrintHelp() {
 	fmt.Println("Usage: gitdeps [options]")
 	fmt.Println("")
 	fmt.Println("Options:")
-	fmt.Println("  --skip  Skip existing directories")
+	fmt.Println("  --skip        Skip existing directories")
+	fmt.Println("  --no-recurse  Do not update getdeps of the root modules")
 	fmt.Println("")
 	fmt.Println("gitdeps " + Version)
 }
 
 func Execute(args []string) {
 	skip := false
+	noRecurse := false
 
-	if len(args) == 1 {
-		if args[0] == "--skip" {
+	if duplicate := CheckStrDuplicates(args); duplicate != "" {
+		fmt.Println("Got duplicate argument: " + duplicate)
+		fmt.Println("")
+		PrintHelp()
+		os.Exit(1)
+	}
+	for pos, arg := range args {
+		if arg == "--skip" {
 			skip = true
+		} else if arg == "--no-recurse" {
+			noRecurse = true
 		} else {
-			fmt.Println("Unknown argument at position 0: " + args[0])
+			fmt.Println("Unknown argument at position " + strconv.Itoa(pos) + ": " + arg)
 			fmt.Println("")
 			PrintHelp()
 			os.Exit(1)
 		}
-	}
-	if len(args) > 2 {
-		PrintHelp()
-		os.Exit(1)
 	}
 
 	workingDir, err := os.Getwd()
@@ -57,7 +64,7 @@ func Execute(args []string) {
 		os.Exit(1)
 	}
 
-	err = UpdateDeps(workingDir, skip)
+	err = UpdateDeps(workingDir, skip, noRecurse)
 
 	if err != nil {
 		fmt.Println(err)
@@ -67,7 +74,7 @@ func Execute(args []string) {
 	}
 }
 
-func UpdateDeps(workingDir string, skip bool) error {
+func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 	depsFile := path.Join(workingDir, "gitdeps.json")
 
 	file, err := os.OpenFile(depsFile, os.O_RDONLY, 0644)
@@ -167,17 +174,19 @@ func UpdateDeps(workingDir string, skip bool) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
-		potentialSubdeps := path.Join(fullPath, "gitdeps.json")
-		subInfo, err := os.Lstat(potentialSubdeps)
-		if err != nil {
-			continue
-		}
-		if !subInfo.Mode().IsRegular() {
-			continue
-		}
-		err = UpdateDeps(fullPath, skip)
-		if err != nil {
-			return err
+		if !noRecurse {
+			potentialSubdeps := path.Join(fullPath, "gitdeps.json")
+			subInfo, err := os.Lstat(potentialSubdeps)
+			if err != nil {
+				continue
+			}
+			if !subInfo.Mode().IsRegular() {
+				continue
+			}
+			err = UpdateDeps(fullPath, skip, noRecurse)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -214,6 +223,19 @@ func StrArrMoreThanOnePresent(arr []string) bool {
 		}
 	}
 	return false
+}
+
+func CheckStrDuplicates(arr []string) string {
+	stringMap := make(map[string]bool)
+
+	for _, str := range arr {
+		if _, exists := stringMap[str]; exists {
+			return str
+		}
+		stringMap[str] = true
+	}
+
+	return ""
 }
 
 func RunCommand(dir string, name string, arg ...string) error {
