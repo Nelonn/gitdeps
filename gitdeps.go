@@ -114,6 +114,7 @@ func UpdateDeps(workingDir string, skip bool) error {
 			}
 		} else {
 			if skip {
+				fmt.Println("Skipped " + fullPath)
 				continue
 			}
 			err := os.RemoveAll(fullPath)
@@ -161,12 +162,7 @@ func UpdateDeps(workingDir string, skip bool) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
-		err = RunCommand(fullPath, "git", "submodule", "init")
-		if err != nil {
-			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
-		}
-
-		err = RunCommand(fullPath, "git", "submodule", "update", "--recursive")
+		err = RunCommand(fullPath, "git", "submodule", "update", "--init", "--recursive")
 		if err != nil {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
