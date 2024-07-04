@@ -58,7 +58,7 @@ brews:
       owner: Nelonn
       name: homebrew-tap
       branch: main
-      #token: "{{ .Env.REPO_HOMEBREW_TAP_WRITE }}"
+      token: "{{ .Env.REPO_HOMEBREW_TAP_WRITE }}"
 
 nfpms:
   - license: MIT
