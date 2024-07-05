@@ -169,20 +169,18 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
-		err = RunCommand(fullPath, "git", "submodule", "update", "--init", "--recursive")
-		if err != nil {
-			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+		if noRecurse {
+			continue
 		}
 
-		if !noRecurse {
-			potentialSubdeps := path.Join(fullPath, "gitdeps.json")
-			subInfo, err := os.Lstat(potentialSubdeps)
+		subDeps := path.Join(fullPath, "gitdeps.json")
+		subDepsInfo, err := os.Lstat(subDeps)
+		if err != nil || !subDepsInfo.Mode().IsRegular() {
+			err = RunCommand(fullPath, "git", "submodule", "update", "--init", "--recursive")
 			if err != nil {
-				continue
+				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
-			if !subInfo.Mode().IsRegular() {
-				continue
-			}
+		} else {
 			err = UpdateDeps(fullPath, skip, noRecurse)
 			if err != nil {
 				return err
@@ -201,6 +199,16 @@ type Module struct {
 }
 
 type ModuleMap map[string]Module
+
+func RunCommand(dir string, name string, arg ...string) error {
+	cmd := exec.Command(name, arg...)
+	cmd.Dir = dir
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
 
 func StrArrContains(arr []string, str string) bool {
 	for _, s := range arr {
@@ -236,14 +244,4 @@ func CheckStrDuplicates(arr []string) string {
 	}
 
 	return ""
-}
-
-func RunCommand(dir string, name string, arg ...string) error {
-	cmd := exec.Command(name, arg...)
-	cmd.Dir = dir
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	return cmd.Run()
 }
