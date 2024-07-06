@@ -30,9 +30,9 @@ brew install gitdeps
 gitdeps
 ```
 
-After running the command, the repository is cloned to the `helloworld` folder
+If the command completes without errors then everything is ready! You can see the `helloworld` submodule in the directory!
 
-This repository contains this `gitdeps.json`:
+This repository contain this `gitdeps.json`:
 
 ```json
 {
