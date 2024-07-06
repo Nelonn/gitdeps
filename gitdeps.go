@@ -100,7 +100,7 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 		if !strings.HasPrefix(fullPath, workingDir) {
 			return errors.New(depsFile + ": '" + modulePath + "': Attempting to access a path outside of the base directory")
 		}
-		if StrArrMoreThanOnePresent([]string{module.Branch, module.Commit, module.Tag}) {
+		if StrArrMoreThanOneNotEmpty([]string{module.Branch, module.Commit, module.Tag}) {
 			return errors.New(depsFile + ": '" + modulePath + "': You can specify only one of `branch`, `commit` or `tag`.")
 		}
 	}
@@ -219,7 +219,7 @@ func StrArrContains(arr []string, str string) bool {
 	return false
 }
 
-func StrArrMoreThanOnePresent(arr []string) bool {
+func StrArrMoreThanOneNotEmpty(arr []string) bool {
 	present := false
 	for _, s := range arr {
 		if s != "" {
