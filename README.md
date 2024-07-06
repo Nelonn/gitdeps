@@ -4,8 +4,6 @@ Git dependencies manager
 
 Often run into problems when using git submodule? Then use a simple and useful tool called `gitdeps`
 
-Zero dependencies!
-
 
 ## Try it right now!
 
@@ -44,6 +42,13 @@ This repository contains this `gitdeps.json`:
   }
 }
 ```
+
+## Features
+
+- Easy to use!
+- Will save you from the frequent `HEAD detached ...`
+- Does not clone standard submodules if there is an `gitdeps.json` in the repository
+- Zero dependencies!
 
 
 ## gitdeps.json
