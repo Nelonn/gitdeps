@@ -94,8 +94,12 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 		return err
 	}
 
-	// Verifying
+	// Verifying and cleaning
 	for modulePath, module := range modules {
+		if strings.HasPrefix(modulePath, "//") || strings.HasPrefix(modulePath, "#") {
+			continue
+		}
+
 		fullPath := filepath.Clean(filepath.Join(workingDir, modulePath))
 		if !strings.HasPrefix(fullPath, workingDir) {
 			return errors.New(depsFile + ": '" + modulePath + "': Attempting to access a path outside of the base directory")
@@ -106,6 +110,10 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 	}
 
 	for modulePath, module := range modules {
+		if strings.HasPrefix(modulePath, "//") || strings.HasPrefix(modulePath, "#") {
+			continue
+		}
+
 		fullPath := filepath.Clean(filepath.Join(workingDir, modulePath))
 
 		_, err := os.Lstat(fullPath)

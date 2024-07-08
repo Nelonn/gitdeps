@@ -55,6 +55,8 @@ This repository contain this `gitdeps.json`:
 
 Key of every module means relative path to module
 
+Use prefix `//` or `#` to disable module, example `//third_party/mbedtls`
+
 - `remote`: URL to remote repository
 - `branch`: Fetch latest commit on the branch
 - `commit`: SHA-1 of commit that you want to use
