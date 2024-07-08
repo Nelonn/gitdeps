@@ -37,7 +37,7 @@ This repository contain this `gitdeps.json`:
 ```json
 {
   "helloworld": {
-    "remote": "https://github.com/go-training/helloworld",
+    "url": "https://github.com/go-training/helloworld",
     "branch": "master"
   }
 }
@@ -57,7 +57,7 @@ Key of every module means relative path to module
 
 Use prefix `//` or `#` to disable module, example `//third_party/mbedtls`
 
-- `remote`: URL to remote repository
+- `url`: URL to remote repository
 - `branch`: Fetch latest commit on the branch
 - `commit`: SHA-1 of commit that you want to use
 - `tag`: Fetch specified tag
@@ -69,11 +69,11 @@ Real world example:
 ```json
 {
   "third_party/mbedtls": {
-    "remote": "https://github.com/Mbed-TLS/mbedtls",
+    "url": "https://github.com/Mbed-TLS/mbedtls",
     "tag": "v3.6.0"
   },
   "third_party/fmt": {
-    "remote": "https://github.com/fmtlib/fmt",
+    "url": "https://github.com/fmtlib/fmt",
     "commit": "c4f6fa71357b223b0ab8ac29577c6228fde8853d"
   }
 }

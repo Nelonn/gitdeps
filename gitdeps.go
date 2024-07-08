@@ -148,7 +148,7 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
-		err = RunCommand(fullPath, "git", "remote", "add", "origin", module.Remote)
+		err = RunCommand(fullPath, "git", "remote", "add", "origin", module.URL)
 		if err != nil {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
@@ -200,7 +200,7 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 }
 
 type Module struct {
-	Remote string `json:"remote"`
+	URL    string `json:"url"`
 	Branch string `json:"branch,omitempty"`
 	Commit string `json:"commit,omitempty"`
 	Tag    string `json:"tag,omitempty"`
