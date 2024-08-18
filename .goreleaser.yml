@@ -64,7 +64,7 @@ nfpms:
   - license: MIT
     maintainer: Michael Neonov <two.nelonn@gmail.com>
     homepage: https://github.com/Nelonn/gitdeps
-    bindir: /usr
+    bindir: /usr/bin
     dependencies:
       - git
     description: Git dependencies manager. Simplified version of git submodules.
