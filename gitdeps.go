@@ -29,7 +29,8 @@ func PrintHelp() {
 	fmt.Println("Usage: gitdeps [options]")
 	fmt.Println("")
 	fmt.Println("Options:")
-	fmt.Println("  -f --force       Re-clone existing modules")
+	fmt.Println("  -f --force       Remove, then clone existing modules")
+	fmt.Println("  -u --update      Update existing modules")
 	fmt.Println("  -n --no-recurse  Do not update getdeps of the root modules")
 	fmt.Println("")
 	fmt.Println("gitdeps " + Version)
@@ -37,6 +38,7 @@ func PrintHelp() {
 
 func Execute(args []string) {
 	force := false
+	update := false
 	noRecurse := false
 
 	if duplicate := CheckStrDuplicates(args); duplicate != "" {
@@ -54,6 +56,14 @@ func Execute(args []string) {
 				os.Exit(1)
 			}
 			force = true
+		} else if arg == "-u" || arg == "--update" {
+			if update {
+				fmt.Println("Duplicate arguments: update")
+				fmt.Println("")
+				PrintHelp()
+				os.Exit(1)
+			}
+			update = true
 		} else if arg == "-n" || arg == "--no-recurse" {
 			if noRecurse {
 				fmt.Println("Duplicate arguments: no-recurse")
@@ -76,7 +86,7 @@ func Execute(args []string) {
 		os.Exit(1)
 	}
 
-	err = UpdateDeps(workingDir, force, noRecurse)
+	err = UpdateDeps(workingDir, update, force, noRecurse)
 
 	if err != nil {
 		fmt.Println(err)
@@ -86,7 +96,7 @@ func Execute(args []string) {
 	}
 }
 
-func UpdateDeps(workingDir string, force bool, noRecurse bool) error {
+func UpdateDeps(workingDir string, update bool, force bool, noRecurse bool) error {
 	depsFile := path.Join(workingDir, "gitdeps.json")
 
 	file, err := os.OpenFile(depsFile, os.O_RDONLY, 0644)
@@ -128,6 +138,8 @@ func UpdateDeps(workingDir string, force bool, noRecurse bool) error {
 
 		fullPath := filepath.Clean(filepath.Join(workingDir, modulePath))
 
+		repoInitialized := false
+
 		_, err := os.Lstat(fullPath)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -140,24 +152,32 @@ func UpdateDeps(workingDir string, force bool, noRecurse bool) error {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		} else {
-			if !force {
+			if force {
+				err := os.RemoveAll(fullPath)
+				if err != nil {
+					return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+				}
+				err = os.MkdirAll(fullPath, 0777)
+				if err != nil {
+					return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+				}
+				// Continue execution
+			} else if update {
+				repoInitialized = true
+				// Continue execution
+			} else {
 				fmt.Println("Skipped " + fullPath)
 				continue
 			}
-			err := os.RemoveAll(fullPath)
-			if err != nil {
-				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
-			}
-			err = os.MkdirAll(fullPath, 0777)
-			if err != nil {
-				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
-			}
-			// Continue execution
 		}
 
-		err = RunCommand(fullPath, "git", "init")
-		if err != nil {
-			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+		if !repoInitialized {
+			err = RunCommand(fullPath, "git", "init")
+			if err != nil {
+				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+			}
+		} else {
+			RunCommand(fullPath, "git", "remote", "remove", "origin")
 		}
 
 		err = RunCommand(fullPath, "git", "remote", "add", "origin", module.URL)
@@ -201,7 +221,7 @@ func UpdateDeps(workingDir string, force bool, noRecurse bool) error {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		} else {
-			err = UpdateDeps(fullPath, force, noRecurse)
+			err = UpdateDeps(fullPath, update, force, noRecurse)
 			if err != nil {
 				return err
 			}
