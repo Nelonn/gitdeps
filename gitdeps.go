@@ -29,14 +29,14 @@ func PrintHelp() {
 	fmt.Println("Usage: gitdeps [options]")
 	fmt.Println("")
 	fmt.Println("Options:")
-	fmt.Println("  --skip        Skip existing directories")
-	fmt.Println("  --no-recurse  Do not update getdeps of the root modules")
+	fmt.Println("  -f --force       Re-clone existing modules")
+	fmt.Println("  -n --no-recurse  Do not update getdeps of the root modules")
 	fmt.Println("")
 	fmt.Println("gitdeps " + Version)
 }
 
 func Execute(args []string) {
-	skip := false
+	force := false
 	noRecurse := false
 
 	if duplicate := CheckStrDuplicates(args); duplicate != "" {
@@ -46,9 +46,21 @@ func Execute(args []string) {
 		os.Exit(1)
 	}
 	for pos, arg := range args {
-		if arg == "--skip" {
-			skip = true
-		} else if arg == "--no-recurse" {
+		if arg == "-f" || arg == "--force" {
+			if force {
+				fmt.Println("Duplicate arguments: force")
+				fmt.Println("")
+				PrintHelp()
+				os.Exit(1)
+			}
+			force = true
+		} else if arg == "-n" || arg == "--no-recurse" {
+			if noRecurse {
+				fmt.Println("Duplicate arguments: no-recurse")
+				fmt.Println("")
+				PrintHelp()
+				os.Exit(1)
+			}
 			noRecurse = true
 		} else {
 			fmt.Println("Unknown argument at position " + strconv.Itoa(pos) + ": " + arg)
@@ -64,7 +76,7 @@ func Execute(args []string) {
 		os.Exit(1)
 	}
 
-	err = UpdateDeps(workingDir, skip, noRecurse)
+	err = UpdateDeps(workingDir, force, noRecurse)
 
 	if err != nil {
 		fmt.Println(err)
@@ -74,7 +86,7 @@ func Execute(args []string) {
 	}
 }
 
-func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
+func UpdateDeps(workingDir string, force bool, noRecurse bool) error {
 	depsFile := path.Join(workingDir, "gitdeps.json")
 
 	file, err := os.OpenFile(depsFile, os.O_RDONLY, 0644)
@@ -128,7 +140,7 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		} else {
-			if skip {
+			if !force {
 				fmt.Println("Skipped " + fullPath)
 				continue
 			}
@@ -189,7 +201,7 @@ func UpdateDeps(workingDir string, skip bool, noRecurse bool) error {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		} else {
-			err = UpdateDeps(fullPath, skip, noRecurse)
+			err = UpdateDeps(fullPath, force, noRecurse)
 			if err != nil {
 				return err
 			}
