@@ -2,6 +2,13 @@ version: 2
 
 project_name: gitdeps
 
+metadata:
+  maintainers:
+    - "Michael Neonov <two.nelonn at gmail.com>"
+  license: "MIT"
+  homepage: "https://github.com/Nelonn/gitdeps"
+  description: "Git dependencies manager. Simplified version of git submodules."
+
 builds:
   - id: linux
     goos: [linux]
@@ -51,10 +58,7 @@ archives:
       - LICENSE
 
 brews:
-  - description: Git dependencies manager. Simplified version of git submodules.
-    homepage: https://github.com/Nelonn/gitdeps
-    license: MIT
-    dependencies:
+  - dependencies:
       - git
     repository:
       owner: Nelonn
@@ -63,11 +67,7 @@ brews:
       token: "{{ .Env.REPO_HOMEBREW_TAP_WRITE }}"
 
 nfpms:
-  - description: Git dependencies manager. Simplified version of git submodules.
-    homepage: https://github.com/Nelonn/gitdeps
-    maintainer: Michael Neonov <two.nelonn@gmail.com>
-    license: MIT
-    bindir: /usr/bin
+  - bindir: /usr/bin
     dependencies:
       - git
     formats:
@@ -78,10 +78,7 @@ nfpms:
       - archlinux
 
 nix:
-  - description: Git dependencies manager. Simplified version of git submodules.
-    homepage: https://github.com/Nelonn/gitdeps
-    license: MIT
-    dependencies:
+  - dependencies:
       - git
     repository:
       owner: Nelonn
