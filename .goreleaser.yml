@@ -82,6 +82,7 @@ nfpms:
 nix:
   - description: "Git dependencies manager. Simplified version of git submodules."
     homepage: "https://github.com/Nelonn/gitdeps"
+    license: mit
 
     dependencies:
       - git
@@ -90,3 +91,4 @@ nix:
       name: nur-packages
       branch: master
       token: "{{ .Env.REPO_NUR_PACKAGES_WRITE }}"
+    path: pkgs/gitdeps/default.nix
