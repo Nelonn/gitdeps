@@ -51,9 +51,11 @@ archives:
       - LICENSE
 
 brews:
-  - license: MIT
-    description: Git dependencies manager. Simplified version of git submodules.
+  - description: Git dependencies manager. Simplified version of git submodules.
     homepage: https://github.com/Nelonn/gitdeps
+    license: MIT
+    dependencies:
+      - git
     repository:
       owner: Nelonn
       name: homebrew-tap
@@ -61,13 +63,28 @@ brews:
       token: "{{ .Env.REPO_HOMEBREW_TAP_WRITE }}"
 
 nfpms:
-  - license: MIT
-    maintainer: Michael Neonov <two.nelonn@gmail.com>
+  - description: Git dependencies manager. Simplified version of git submodules.
     homepage: https://github.com/Nelonn/gitdeps
+    maintainer: Michael Neonov <two.nelonn@gmail.com>
+    license: MIT
     bindir: /usr/bin
     dependencies:
       - git
-    description: Git dependencies manager. Simplified version of git submodules.
     formats:
+      - apk
       - deb
       - rpm
+      - termux.deb
+      - archlinux
+
+nix:
+  - description: Git dependencies manager. Simplified version of git submodules.
+    homepage: https://github.com/Nelonn/gitdeps
+    license: MIT
+    dependencies:
+      - git
+    repository:
+      owner: Nelonn
+      name: nur-packages
+      branch: master
+      token: "{{ .Env.REPO_NUR_PACKAGES_WRITE }}"
