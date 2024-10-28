@@ -79,16 +79,16 @@ nfpms:
       - termux.deb
       - archlinux
 
-nix:
-  - description: "Git dependencies manager. Simplified version of git submodules."
-    homepage: "https://github.com/Nelonn/gitdeps"
-    license: mit
-
-    dependencies:
-      - git
-    repository:
-      owner: Nelonn
-      name: nur-packages
-      branch: master
-      token: "{{ .Env.REPO_NUR_PACKAGES_WRITE }}"
-    path: pkgs/gitdeps/default.nix
+#nix:
+#  - description: "Git dependencies manager. Simplified version of git submodules."
+#    homepage: "https://github.com/Nelonn/gitdeps"
+#    license: mit
+#
+#    dependencies:
+#      - git
+#    repository:
+#      owner: Nelonn
+#      name: nur-packages
+#      branch: master
+#      token: "{{ .Env.REPO_NUR_PACKAGES_WRITE }}"
+#    path: pkgs/gitdeps/default.nix
