@@ -177,7 +177,7 @@ func UpdateDeps(workingDir string, update bool, force bool, noRecurse bool) erro
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		} else {
-			RunCommand(fullPath, "git", "remote", "remove", "origin")
+			_ = RunCommand(fullPath, "git", "remote", "remove", "origin")
 		}
 
 		err = RunCommand(fullPath, "git", "remote", "add", "origin", module.URL)
@@ -209,6 +209,17 @@ func UpdateDeps(workingDir string, update bool, force bool, noRecurse bool) erro
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
+		if module.Patches != nil && len(module.Patches) > 0 {
+			for i, patch := range module.Patches {
+				absPatchPath := path.Join(workingDir, patch)
+				fmt.Println("Applying patch " + absPatchPath)
+				err = RunCommand(fullPath, "git", "apply", absPatchPath)
+				if err != nil {
+					return errors.New(depsFile + ": '" + modulePath + "' patches[" + strconv.Itoa(i) + "]: " + err.Error())
+				}
+			}
+		}
+
 		if noRecurse {
 			continue
 		}
@@ -232,10 +243,11 @@ func UpdateDeps(workingDir string, update bool, force bool, noRecurse bool) erro
 }
 
 type Module struct {
-	URL    string `json:"url"`
-	Branch string `json:"branch,omitempty"`
-	Commit string `json:"commit,omitempty"`
-	Tag    string `json:"tag,omitempty"`
+	URL     string   `json:"url"`
+	Branch  string   `json:"branch,omitempty"`
+	Commit  string   `json:"commit,omitempty"`
+	Tag     string   `json:"tag,omitempty"`
+	Patches []string `json:"patches,omitempty"`
 }
 
 type ModuleMap map[string]Module

@@ -47,6 +47,7 @@ This repository contain this `gitdeps.json`:
 
 - Easy to use!
 - Will save you from the frequent `HEAD detached ...`
+- Patches support!
 - Does not clone standard submodules if there is an `gitdeps.json` in the repository
 - Zero dependencies!
 
@@ -61,6 +62,7 @@ Use prefix `//` or `#` to disable module, example `//third_party/mbedtls`
 - `branch`: Fetch latest commit on the branch
 - `commit`: SHA-1 of commit that you want to use
 - `tag`: Fetch specified tag
+- `patches`: Optional array of patches
 
 You can specify only one of `branch`, `commit` or `tag` in a single module!
 
@@ -74,7 +76,8 @@ Real world example:
   },
   "third_party/fmt": {
     "url": "https://github.com/fmtlib/fmt",
-    "commit": "c4f6fa71357b223b0ab8ac29577c6228fde8853d"
+    "commit": "c4f6fa71357b223b0ab8ac29577c6228fde8853d",
+    "patches": ["third_party/some_fmt.patch"]
   }
 }
 ```
