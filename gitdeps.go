@@ -186,19 +186,19 @@ func UpdateDeps(workingDir string, update bool, force bool, noRecurse bool) erro
 		}
 
 		if module.Branch != "" {
-			err = RunCommand(fullPath, "git", "fetch", "origin", module.Branch)
+			err = RunCommand(fullPath, "git", "fetch", "--depth", "1", "origin", module.Branch)
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		}
 		if module.Commit != "" {
-			err = RunCommand(fullPath, "git", "fetch", "origin", module.Commit)
+			err = RunCommand(fullPath, "git", "fetch", "--depth", "1", "origin", module.Commit)
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		}
 		if module.Tag != "" {
-			err = RunCommand(fullPath, "git", "fetch", "origin", "tag", module.Tag)
+			err = RunCommand(fullPath, "git", "fetch", "--depth", "1", "origin", "tag", module.Tag)
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
