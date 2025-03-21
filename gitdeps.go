@@ -40,18 +40,22 @@ type Options struct {
 	force     bool
 	update    bool
 	noRecurse bool
+	noClean   bool
 }
 
 func Execute(args []string) {
-	opts := &Options{}
-
-	if duplicate := CheckStrDuplicates(args); duplicate != "" {
-		fmt.Println("Got duplicate argument: " + duplicate)
-		fmt.Println("")
-		PrintHelp()
-		os.Exit(1)
+	opts := &Options{
+		force:     false,
+		update:    false,
+		noRecurse: false,
+		noClean:   false,
 	}
+
 	for pos, arg := range args {
+		if arg == "-h" || arg == "--help" {
+			PrintHelp()
+			os.Exit(0)
+		}
 		if arg == "-f" || arg == "--force" {
 			if opts.force {
 				fmt.Println("Duplicate arguments: force")
@@ -76,6 +80,14 @@ func Execute(args []string) {
 				os.Exit(1)
 			}
 			opts.noRecurse = true
+		} else if arg == "-c" || arg == "--no-clean" {
+			if opts.noClean {
+				fmt.Println("Duplicate arguments: no-clean")
+				fmt.Println("")
+				PrintHelp()
+				os.Exit(1)
+			}
+			opts.noClean = true
 		} else {
 			fmt.Println("Unknown argument at position " + strconv.Itoa(pos) + ": " + arg)
 			fmt.Println("")
@@ -213,6 +225,13 @@ func UpdateDeps(workingDir string, opts *Options) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
+		if !opts.noClean {
+			err = RunCommand(fullPath, "git", "clean", "-fd")
+			if err != nil {
+				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+			}
+		}
+
 		if module.Patches != nil && len(module.Patches) > 0 {
 			for i, patch := range module.Patches {
 				absPatchPath := path.Join(workingDir, patch)
@@ -287,17 +306,4 @@ func StrArrMoreThanOneNotEmpty(arr []string) bool {
 		}
 	}
 	return false
-}
-
-func CheckStrDuplicates(arr []string) string {
-	stringMap := make(map[string]bool)
-
-	for _, str := range arr {
-		if _, exists := stringMap[str]; exists {
-			return str
-		}
-		stringMap[str] = true
-	}
-
-	return ""
 }

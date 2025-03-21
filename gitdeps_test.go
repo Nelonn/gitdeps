@@ -43,23 +43,3 @@ func TestStrArrMoreThanOneNotEmpty(t *testing.T) {
 		}
 	}
 }
-
-// Test for CheckStrDuplicates
-func TestCheckStrDuplicates(t *testing.T) {
-	tests := []struct {
-		arr      []string
-		expected string
-	}{
-		{[]string{"a", "b", "c"}, ""},
-		{[]string{"a", "b", "a"}, "a"},
-		{[]string{"a", "b", "b"}, "b"},
-		{[]string{"a", "a", "a"}, "a"},
-	}
-
-	for _, test := range tests {
-		result := CheckStrDuplicates(test.arr)
-		if result != test.expected {
-			t.Errorf("CheckStrDuplicates(%v) = %v; want %v", test.arr, result, test.expected)
-		}
-	}
-}
