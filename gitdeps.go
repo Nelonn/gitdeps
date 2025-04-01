@@ -250,7 +250,7 @@ func UpdateDeps(workingDir string, opts *Options) error {
 		subDeps := path.Join(fullPath, "gitdeps.json")
 		subDepsInfo, err := os.Lstat(subDeps)
 		if err != nil || !subDepsInfo.Mode().IsRegular() {
-			err = RunCommand(fullPath, "git", "submodule", "update", "--init", "--recursive")
+			err = RunCommand(fullPath, "git", "submodule", "update", "--init", "--recursive", "--depth", "1")
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
