@@ -32,7 +32,7 @@ func PrintHelp() {
 	fmt.Println("  -f --force       Remove, then clone existing modules")
 	fmt.Println("  -u --update      Update existing modules")
 	fmt.Println("  -n --no-recurse  Do not update getdeps of the root modules")
-	fmt.Println("  -p --profiles    Comma-separated list of active profiles")
+	fmt.Println("  -e --enable      Comma-separated list of active profiles")
 	fmt.Println("")
 	fmt.Println("gitdeps " + Version)
 }
@@ -98,15 +98,15 @@ func Execute(args []string) {
 				os.Exit(1)
 			}
 			opts.noClean = true
-		} else if arg == "-p" || arg == "--profiles" {
+		} else if arg == "-e" || arg == "--enable" {
 			if len(opts.profiles) > 0 {
-				fmt.Println("Duplicate arguments: profiles")
+				fmt.Println("Duplicate arguments: enable")
 				fmt.Println("")
 				PrintHelp()
 				os.Exit(1)
 			}
 			if pos+1 >= len(args) {
-				fmt.Println("Missing value for profiles")
+				fmt.Println("Missing value for enable")
 				fmt.Println("")
 				PrintHelp()
 				os.Exit(1)
@@ -185,9 +185,9 @@ func UpdateDeps(workingDir string, opts *Options) error {
 			continue
 		}
 
-		if len(module.Profiles) > 0 {
+		if len(module.Option) > 0 {
 			active := false
-			for _, p := range module.Profiles {
+			for _, p := range module.Option {
 				if StrArrContains(opts.profiles, p) {
 					active = true
 					opts.usedProfs[p] = true
@@ -229,7 +229,7 @@ func UpdateDeps(workingDir string, opts *Options) error {
 				repoInitialized = true
 				// Continue execution
 			} else {
-				fmt.Println("Skipped " + fullPath)
+				fmt.Println("Skipped (exists) " + fullPath)
 				continue
 			}
 		}
@@ -302,7 +302,15 @@ func UpdateDeps(workingDir string, opts *Options) error {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
 		} else {
-			err = UpdateDeps(fullPath, opts)
+			childOpts := &Options{
+				force:     opts.force,
+				update:    opts.update,
+				noRecurse: opts.noRecurse,
+				noClean:   opts.noClean,
+				profiles:  module.Define,
+				usedProfs: make(map[string]bool),
+			}
+			err = UpdateDeps(fullPath, childOpts)
 			if err != nil {
 				return err
 			}
@@ -313,12 +321,13 @@ func UpdateDeps(workingDir string, opts *Options) error {
 }
 
 type Module struct {
-	URL      string   `json:"url"`
-	Branch   string   `json:"branch,omitempty"`
-	Commit   string   `json:"commit,omitempty"`
-	Tag      string   `json:"tag,omitempty"`
-	Patches  []string `json:"patches,omitempty"`
-	Profiles []string `json:"profiles,omitempty"`
+	URL     string   `json:"url"`
+	Branch  string   `json:"branch,omitempty"`
+	Commit  string   `json:"commit,omitempty"`
+	Tag     string   `json:"tag,omitempty"`
+	Patches []string `json:"patches,omitempty"`
+	Option  []string `json:"option,omitempty"`
+	Define  []string `json:"define,omitempty"`
 }
 
 type ModuleMap map[string]Module

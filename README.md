@@ -54,20 +54,23 @@ This repository contain this `gitdeps.json`:
 
 ## gitdeps.json
 
-Key of every module means relative path to module
+This file manages external project dependencies. Each key is the relative local path where the module will be cloned.
 
-Use prefix `//` or `#` to disable module, example `//third_party/mbedtls`
+Use prefix `//` or `#` to disable module, example: `//third_party/mbedtls`
 
-- `url`: URL to remote repository
-- `branch`: Fetch latest commit on the branch
-- `commit`: SHA-1 of commit that you want to use
-- `tag`: Fetch specified tag
-- `patches`: Optional array of patches, each patch path is relative to gitdeps.json file
-- `profiles`: Optional array of profiles. If profiles is empty, the dependency is always cloned; if not empty, it's cloned only when at least one listed profile is active.
+Module declaration structure:
+
+- `url`: URL of the remote Git repository.
+- `branch`: Fetches the latest commit on this branch.
+- `commit`: Checksum of commit that you want to use (usually SHA-1)
+- `tag`: Fetches a specific tag.
+- `patches`: An optional array of paths to patch files. Paths are relative to the gitdeps file. Patches are applied after cloning.
+- `option`: An optional array of profile names (e.g., `["cpp17", "dev"]`). The dependency is cloned only if at least one of the listed profiles is specified using `--enable` or by parent gitdeps file. If empty or omitted, the dependency is always cloned.
+- `define`: An optional array of profiles to pass down to this dependency's own gitdeps.json file. Profiles specified via command-line arguments only apply to the root configuration.
 
 You can specify only one of `branch`, `commit` or `tag` in a single module!
 
-Real world example:
+Example:
 
 ```json
 {
@@ -79,12 +82,13 @@ Real world example:
     "url": "https://github.com/fmtlib/fmt",
     "commit": "c4f6fa71357b223b0ab8ac29577c6228fde8853d",
     "patches": ["third_party/some_fmt.patch"],
-    "profiles": ["cpp17"]
+    "option": ["cpp17"],
+    "define": ["sub_profile"]
   }
 }
 ```
 
-Profile, provided in real world example can be enabled using `gitdeps --profiles cpp17`
+Profile, provided in example can be enabled using `gitdeps --enable cpp17`
 
 
 ## License

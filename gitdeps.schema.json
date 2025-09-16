@@ -4,36 +4,80 @@
   "title": "gitdeps",
   "description": "Simplified git submodules",
   "type": "object",
-  "additionalProperties": {
-    "type": "object",
-    "properties": {
-      "url": {
-        "type": "string",
-        "format": "uri"
+  "patternProperties": {
+    "^[a-zA-Z0-9_-]+$": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the remote Git repository."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Fetches the latest commit on this branch."
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{40}$",
+          "description": "Checksum of commit that you want to use (usually SHA-1)."
+        },
+        "tag": {
+          "type": "string",
+          "description": "Fetches a specific tag."
+        },
+        "patches": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^/].*",
+            "description": "Path to patch file relative to the gitdeps file."
+          },
+          "description": "An optional array of paths to patch files. Patches are applied after cloning."
+        },
+        "option": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Profile name (e.g., 'cpp17', 'dev')."
+          },
+          "description": "An optional array of profile names. The dependency is cloned only if at least one of the listed profiles is specified. If empty or omitted, the dependency is always cloned."
+        },
+        "define": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Profile name to pass down to this dependency's gitdeps.json file."
+          },
+          "description": "An optional array of profiles to pass down to this dependency's own gitdeps.json file."
+        }
       },
-      "branch": {
-        "type": "string"
-      },
-      "tag": {
-        "type": "string"
-      },
-      "commit": {
-        "type": "string",
-        "pattern": "^[0-9a-f]{40}$"
-      }
+      "required": ["url"],
+      "oneOf": [
+        {
+          "required": ["branch"]
+        },
+        {
+          "required": ["tag"]
+        },
+        {
+          "required": ["commit"]
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "profilePattern": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$"
     },
-    "required": ["url"],
-    "oneOf": [
-      {
-        "required": ["branch"]
-      },
-      {
-        "required": ["tag"]
-      },
-      {
-        "required": ["commit"]
-      }
-    ],
-    "additionalProperties": false
+    "patchPath": {
+      "type": "string",
+      "pattern": "^[^/].*"
+    }
   }
 }
