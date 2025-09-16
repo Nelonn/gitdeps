@@ -1,6 +1,7 @@
 {
   "helloworld": {
     "url": "https://github.com/go-training/helloworld",
-    "branch": "master"
+    "branch": "master",
+    "profiles": ["test"]
   }
 }

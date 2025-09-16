@@ -32,6 +32,7 @@ func PrintHelp() {
 	fmt.Println("  -f --force       Remove, then clone existing modules")
 	fmt.Println("  -u --update      Update existing modules")
 	fmt.Println("  -n --no-recurse  Do not update getdeps of the root modules")
+	fmt.Println("  -p --profiles    Comma-separated list of active profiles")
 	fmt.Println("")
 	fmt.Println("gitdeps " + Version)
 }
@@ -41,6 +42,8 @@ type Options struct {
 	update    bool
 	noRecurse bool
 	noClean   bool
+	profiles  []string
+	usedProfs map[string]bool
 }
 
 func Execute(args []string) {
@@ -49,9 +52,16 @@ func Execute(args []string) {
 		update:    false,
 		noRecurse: false,
 		noClean:   false,
+		profiles:  []string{},
+		usedProfs: map[string]bool{},
 	}
 
+	skipNext := false
 	for pos, arg := range args {
+		if skipNext {
+			skipNext = false
+			continue
+		}
 		if arg == "-h" || arg == "--help" {
 			PrintHelp()
 			os.Exit(0)
@@ -88,6 +98,21 @@ func Execute(args []string) {
 				os.Exit(1)
 			}
 			opts.noClean = true
+		} else if arg == "-p" || arg == "--profiles" {
+			if len(opts.profiles) > 0 {
+				fmt.Println("Duplicate arguments: profiles")
+				fmt.Println("")
+				PrintHelp()
+				os.Exit(1)
+			}
+			if pos+1 >= len(args) {
+				fmt.Println("Missing value for profiles")
+				fmt.Println("")
+				PrintHelp()
+				os.Exit(1)
+			}
+			opts.profiles = strings.Split(args[pos+1], ",")
+			skipNext = true
 		} else {
 			fmt.Println("Unknown argument at position " + strconv.Itoa(pos) + ": " + arg)
 			fmt.Println("")
@@ -109,6 +134,14 @@ func Execute(args []string) {
 		os.Exit(1)
 	} else {
 		fmt.Println("Updated gitdeps")
+	}
+
+	if len(opts.profiles) > 0 {
+		for _, profile := range opts.profiles {
+			if !opts.usedProfs[profile] {
+				fmt.Println("Warning: profile not used:", profile)
+			}
+		}
 	}
 }
 
@@ -150,6 +183,20 @@ func UpdateDeps(workingDir string, opts *Options) error {
 	for modulePath, module := range modules {
 		if strings.HasPrefix(modulePath, "//") || strings.HasPrefix(modulePath, "#") {
 			continue
+		}
+
+		if len(module.Profiles) > 0 {
+			active := false
+			for _, p := range module.Profiles {
+				if StrArrContains(opts.profiles, p) {
+					active = true
+					opts.usedProfs[p] = true
+				}
+			}
+			if !active {
+				fmt.Println("Skipped (profile disabled) " + modulePath)
+				continue
+			}
 		}
 
 		fullPath := filepath.Clean(filepath.Join(workingDir, modulePath))
@@ -266,11 +313,12 @@ func UpdateDeps(workingDir string, opts *Options) error {
 }
 
 type Module struct {
-	URL     string   `json:"url"`
-	Branch  string   `json:"branch,omitempty"`
-	Commit  string   `json:"commit,omitempty"`
-	Tag     string   `json:"tag,omitempty"`
-	Patches []string `json:"patches,omitempty"`
+	URL      string   `json:"url"`
+	Branch   string   `json:"branch,omitempty"`
+	Commit   string   `json:"commit,omitempty"`
+	Tag      string   `json:"tag,omitempty"`
+	Patches  []string `json:"patches,omitempty"`
+	Profiles []string `json:"profiles,omitempty"`
 }
 
 type ModuleMap map[string]Module

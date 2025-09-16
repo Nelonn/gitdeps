@@ -62,7 +62,8 @@ Use prefix `//` or `#` to disable module, example `//third_party/mbedtls`
 - `branch`: Fetch latest commit on the branch
 - `commit`: SHA-1 of commit that you want to use
 - `tag`: Fetch specified tag
-- `patches`: Optional array of patches
+- `patches`: Optional array of patches, each patch path is relative to gitdeps.json file
+- `profiles`: Optional array of profiles. If profiles is empty, the dependency is always cloned; if not empty, it's cloned only when at least one listed profile is active.
 
 You can specify only one of `branch`, `commit` or `tag` in a single module!
 
@@ -77,10 +78,13 @@ Real world example:
   "third_party/fmt": {
     "url": "https://github.com/fmtlib/fmt",
     "commit": "c4f6fa71357b223b0ab8ac29577c6228fde8853d",
-    "patches": ["third_party/some_fmt.patch"]
+    "patches": ["third_party/some_fmt.patch"],
+    "profiles": ["cpp17"]
   }
 }
 ```
+
+Profile, provided in real world example can be enabled using `gitdeps --profiles cpp17`
 
 
 ## License
