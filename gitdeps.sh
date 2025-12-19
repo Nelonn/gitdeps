@@ -10,7 +10,7 @@ set -e
 
 cd "`dirname "$0"`"
 
-VERSION="0.2.0"
+VERSION="0.2.2"
 RELEASES_URL="https://github.com/Nelonn/gitdeps/releases/download"
 
 OS_ARCH=$(echo `uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/`)
