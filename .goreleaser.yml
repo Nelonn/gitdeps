@@ -29,24 +29,24 @@ builds:
 
 archives:
   - id: linux-archive
-    builds: [linux]
+    ids: [linux]
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     wrap_in_directory: true
-    format: tar.gz
+    formats: [ 'tar.gz' ]
     files:
       - LICENSE
   - id: darwin-archive
-    builds: [darwin]
+    ids: [darwin]
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     wrap_in_directory: true
-    format: zip
+    formats: [ 'zip' ]
     files:
       - LICENSE
   - id: windows-archive
-    builds: [windows]
+    ids: [windows]
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     wrap_in_directory: false
-    format: zip
+    formats: [ 'zip' ]
     files:
       - LICENSE
 
