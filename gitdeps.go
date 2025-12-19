@@ -31,6 +31,7 @@ func PrintHelp() {
 	fmt.Println("Options:")
 	fmt.Println("  -f --force       Remove, then clone existing modules")
 	fmt.Println("  -u --update      Update existing modules")
+	fmt.Println("  -d --deep        Clone without --depth=1 that useful for dev")
 	fmt.Println("  -n --no-recurse  Do not update getdeps of the root modules")
 	fmt.Println("  -e --enable      Comma-separated list of active profiles")
 	fmt.Println("")
@@ -40,6 +41,7 @@ func PrintHelp() {
 type Options struct {
 	force     bool
 	update    bool
+	deep      bool
 	noRecurse bool
 	noClean   bool
 	profiles  []string
@@ -50,71 +52,75 @@ func Execute(args []string) {
 	opts := &Options{
 		force:     false,
 		update:    false,
+		deep:      false,
 		noRecurse: false,
 		noClean:   false,
 		profiles:  []string{},
 		usedProfs: map[string]bool{},
 	}
 
-	skipNext := false
-	for pos, arg := range args {
-		if skipNext {
-			skipNext = false
-			continue
-		}
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+
 		if arg == "-h" || arg == "--help" {
 			PrintHelp()
 			os.Exit(0)
 		}
-		if arg == "-f" || arg == "--force" {
-			if opts.force {
-				fmt.Println("Duplicate arguments: force")
-				fmt.Println("")
-				PrintHelp()
-				os.Exit(1)
+
+		if len(arg) > 1 && arg[0] == '-' && arg[1] != '-' {
+			for _, ch := range arg[1:] {
+				switch ch {
+				case 'f':
+					opts.force = true
+				case 'u':
+					opts.update = true
+				case 'd':
+					opts.deep = true
+				case 'n':
+					opts.noRecurse = true
+				case 'c':
+					opts.noClean = true
+				case 'e':
+					if i+1 >= len(args) {
+						fmt.Println("Missing value for enable")
+						fmt.Println("")
+						PrintHelp()
+						os.Exit(1)
+					}
+					i++
+					opts.profiles = strings.Split(args[i], ",")
+				default:
+					fmt.Println("Unknown flag: -" + string(ch))
+					fmt.Println("")
+					PrintHelp()
+					os.Exit(1)
+				}
 			}
+			continue
+		}
+
+		switch arg {
+		case "--force":
 			opts.force = true
-		} else if arg == "-u" || arg == "--update" {
-			if opts.update {
-				fmt.Println("Duplicate arguments: update")
-				fmt.Println("")
-				PrintHelp()
-				os.Exit(1)
-			}
+		case "--update":
 			opts.update = true
-		} else if arg == "-n" || arg == "--no-recurse" {
-			if opts.noRecurse {
-				fmt.Println("Duplicate arguments: no-recurse")
-				fmt.Println("")
-				PrintHelp()
-				os.Exit(1)
-			}
+		case "--deep":
+			opts.deep = true
+		case "--no-recurse":
 			opts.noRecurse = true
-		} else if arg == "-c" || arg == "--no-clean" {
-			if opts.noClean {
-				fmt.Println("Duplicate arguments: no-clean")
-				fmt.Println("")
-				PrintHelp()
-				os.Exit(1)
-			}
+		case "--no-clean":
 			opts.noClean = true
-		} else if arg == "-e" || arg == "--enable" {
-			if len(opts.profiles) > 0 {
-				fmt.Println("Duplicate arguments: enable")
-				fmt.Println("")
-				PrintHelp()
-				os.Exit(1)
-			}
-			if pos+1 >= len(args) {
+		case "--enable":
+			if i+1 >= len(args) {
 				fmt.Println("Missing value for enable")
 				fmt.Println("")
 				PrintHelp()
 				os.Exit(1)
 			}
-			opts.profiles = strings.Split(args[pos+1], ",")
-			skipNext = true
-		} else {
-			fmt.Println("Unknown argument at position " + strconv.Itoa(pos) + ": " + arg)
+			i++
+			opts.profiles = strings.Split(args[i], ",")
+		default:
+			fmt.Println("Unknown argument: " + arg)
 			fmt.Println("")
 			PrintHelp()
 			os.Exit(1)
@@ -248,20 +254,21 @@ func UpdateDeps(workingDir string, opts *Options) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
-		if module.Branch != "" {
-			err = RunCommand(fullPath, "git", "fetch", "--depth", "1", "origin", module.Branch)
-			if err != nil {
-				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+		{
+			var args []string
+			args = append(args, "fetch")
+			if !opts.deep {
+				args = append(args, "--depth", "1")
 			}
-		}
-		if module.Commit != "" {
-			err = RunCommand(fullPath, "git", "fetch", "--depth", "1", "origin", module.Commit)
-			if err != nil {
-				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+			args = append(args, "origin")
+			if module.Branch != "" {
+				args = append(args, module.Branch)
+			} else if module.Commit != "" {
+				args = append(args, module.Commit)
+			} else if module.Tag != "" {
+				args = append(args, "tag", module.Tag)
 			}
-		}
-		if module.Tag != "" {
-			err = RunCommand(fullPath, "git", "fetch", "--depth", "1", "origin", "tag", module.Tag)
+			err := RunCommand(fullPath, "git", args...)
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
