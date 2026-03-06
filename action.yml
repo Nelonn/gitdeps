@@ -3,8 +3,81 @@ description: 'gitdeps'
 runs:
   using: 'composite'
   steps:
-    - name: gitdeps installation
+    # GET INFO PARTS
+    - name: get sys info (Unix)
       shell: bash
+      if: os.runner != 'Windows'
       run: |
-        wget https://raw.githubusercontent.com/Nelonn/gitdeps/main/gitdeps.sh
-        sh gitdeps.sh
+        set -e
+        cd "`dirname "$0"`" 
+        VERSION="0.2.2"
+        
+        RELEASES_URL="https://github.com/Nelonn/gitdeps/releases/download" 
+        OS_ARCH=$(echo `uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/`)
+        
+        if [ "$(uname)" = "Darwin" ]; then
+          BASE_NAME=gitdeps_${VERSION}_darwin_${OS_ARCH}
+          FILE_NAME=${BASE_NAME}.zip
+        else
+          BASE_NAME=gitdeps_${VERSION}_linux_${OS_ARCH}
+          FILE_NAME=${BASE_NAME}.tar.gz
+        fi
+
+    - name: get sys info (Windows)
+      shell: pwsh
+      if: os.runner == 'Windows'
+      run: |
+        $extractPath = ".gitdeps"
+        $arch = (Get-WmiObject Win32_Processor).Architecture
+        
+        if ($arch -eq 12) {
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v0.2.2/gitdeps_0.2.2_windows_arm64.zip"
+        } elseif ($arch -eq 9) {
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v0.2.2/gitdeps_0.2.2_windows_amd64.zip"
+        } elseif ($arch -eq 0) {
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v0.2.2/gitdeps_0.2.2_windows_386.zip"
+        } else {
+            Write-Error "Unsupported architecture: $arch"
+            exit 1
+        }
+    # DOWNLOAD PART
+    - name: download archive (Unix)
+      shell: bash
+      if: os.runner == 'Unix'
+      run: |
+        echo Downloading ${RELEASES_URL}/v${VERSION}/${FILE_NAME}
+        curl --create-dirs -LO --output-dir .gitdeps ${RELEASES_URL}/v${VERSION}/${FILE_NAME}
+
+    - name: download archive (Windows)
+      shell: pwsh
+      if: os.runner == 'Windows'
+      run: Invoke-WebRequest -Uri $url -OutFile $outputPath
+
+    # EXTRACT PART
+    - name: extract archive (Linux)
+      shell: bash
+      if: os.runner == 'Linux'
+      run: tar -xf .gitdeps/${FILE_NAME} -C .gitdeps
+
+    - name: extract archive (Linux)
+      shell: bash
+      if: os.runner == 'macOS'
+      run: unzip .gitdeps/${FILE_NAME} -d .gitdeps
+
+    - name: extract archive (Windows)
+      shell: pwsh
+      if: os.runner == 'Windows'
+      run: |
+        Expand-Archive -Path $outputPath -DestinationPath $extractPath -Force
+        Remove-Item $outputPath
+
+    # RUN GITDEPS
+    - name: run gitdeps (Unix)
+      shell: bash
+      if: os.runner == 'Unix'
+      run: .gitdeps/${BASE_NAME}/gitdeps
+
+    - name: run gitdeps (Windows)
+      shell: pwsh
+      if: os.runner == 'Windows'
+      run: .\gitdeps\gitdeps.exe
