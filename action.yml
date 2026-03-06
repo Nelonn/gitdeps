@@ -1,0 +1,10 @@
+name: 'gitdeps action'
+description: 'gitdeps'
+runs:
+  using: 'composite'
+  steps:
+    - name: gitdeps installation
+      shell: bash
+      run: |
+        wget https://raw.githubusercontent.com/Nelonn/gitdeps/main/gitdeps.sh
+        sh gitdeps.sh
