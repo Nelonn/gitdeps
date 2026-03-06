@@ -1,16 +1,21 @@
 name: 'gitdeps action'
 description: 'gitdeps'
+inputs:
+  gitdeps_ver:
+    description: 'set gitdeps version'
+    required: false
+    default: '0.2.2'
 runs:
   using: 'composite'
   steps:
     # GET INFO PARTS
     - name: get sys info (Linux)
       shell: bash
-      if: os.runner == 'Linux'
+      if: runner.os == 'Linux'
       run: |
         set -e
         cd "`dirname "$0"`" 
-        VERSION="0.2.2"
+        VERSION=${{ inputs.gitdeps_ver }}
         
         RELEASES_URL="https://github.com/Nelonn/gitdeps/releases/download" 
         OS_ARCH=$(echo `uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/`)
@@ -20,7 +25,7 @@ runs:
 
     - name: get sys info (MacOS)
       shell: bash
-      if: os.runner == 'macOS'
+      if: runner.os == 'macOS'
       run:
         set -e
         cd "`dirname "$0"`"
@@ -34,11 +39,11 @@ runs:
 
     - name: get sys info (Windows)
       shell: pwsh
-      if: os.runner == 'Windows'
+      if: runner.os == 'Windows'
       run: |
         $extractPath = ".gitdeps"
         $arch = (Get-WmiObject Win32_Processor).Architecture
-        $VERSION = "0.2.2"
+        $VERSION = "${{ inputs.gitdeps_ver }}"
         
         if ($arch -eq 12) {
             $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_arm64.zip"
@@ -53,30 +58,30 @@ runs:
     # DOWNLOAD PART
     - name: download archive (Unix)
       shell: bash
-      if: os.runner != 'Windows'
+      if: runner.os != 'Windows'
       run: |
         echo Downloading ${RELEASES_URL}/v${VERSION}/${FILE_NAME}
         curl --create-dirs -LO --output-dir .gitdeps ${RELEASES_URL}/v${VERSION}/${FILE_NAME}
 
     - name: download archive (Windows)
       shell: pwsh
-      if: os.runner == 'Windows'
+      if: runner.os == 'Windows'
       run: Invoke-WebRequest -Uri $url -OutFile $outputPath
 
     # EXTRACT PART
     - name: extract archive (Linux)
       shell: bash
-      if: os.runner == 'Linux'
+      if: runner.os == 'Linux'
       run: tar -xf .gitdeps/${FILE_NAME} -C .gitdeps
 
     - name: extract archive (macOS)
       shell: bash
-      if: os.runner == 'macOS'
+      if: runner.os == 'macOS'
       run: unzip .gitdeps/${FILE_NAME} -d .gitdeps
 
     - name: extract archive (Windows)
       shell: pwsh
-      if: os.runner == 'Windows'
+      if: runner.os == 'Windows'
       run: |
         Expand-Archive -Path $outputPath -DestinationPath $extractPath -Force
         Remove-Item $outputPath
@@ -84,10 +89,10 @@ runs:
     # RUN GITDEPS
     - name: run gitdeps (Unix)
       shell: bash
-      if: os.runner == 'Unix'
+      if: runner.os == 'Unix'
       run: .gitdeps/${BASE_NAME}/gitdeps
 
     - name: run gitdeps (Windows)
       shell: pwsh
-      if: os.runner == 'Windows'
+      if: runner.os == 'Windows'
       run: .\gitdeps\gitdeps.exe
