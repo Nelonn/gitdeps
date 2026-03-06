@@ -50,11 +50,11 @@ runs:
         $VERSION = "${{ inputs.gitdeps_ver }}"
         
         if ($arch -eq 12) {
-            $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_arm64.zip"
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v${VERSION}/gitdeps_${VERSION}_windows_arm64.zip"
         } elseif ($arch -eq 9) {
-            $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_amd64.zip"
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v${VERSION}/gitdeps_${VERSION}_windows_amd64.zip"
         } elseif ($arch -eq 0) {
-            $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_386.zip"
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v${VERSION}/gitdeps_${VERSION}_windows_386.zip"
         } else {
             Write-Error "Unsupported architecture: $arch"
             exit 1
