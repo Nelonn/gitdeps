@@ -4,9 +4,9 @@ runs:
   using: 'composite'
   steps:
     # GET INFO PARTS
-    - name: get sys info (Unix)
+    - name: get sys info (Linux)
       shell: bash
-      if: os.runner != 'Windows'
+      if: os.runner == 'Linux'
       run: |
         set -e
         cd "`dirname "$0"`" 
@@ -15,13 +15,22 @@ runs:
         RELEASES_URL="https://github.com/Nelonn/gitdeps/releases/download" 
         OS_ARCH=$(echo `uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/`)
         
-        if [ "$(uname)" = "Darwin" ]; then
-          BASE_NAME=gitdeps_${VERSION}_darwin_${OS_ARCH}
-          FILE_NAME=${BASE_NAME}.zip
-        else
-          BASE_NAME=gitdeps_${VERSION}_linux_${OS_ARCH}
-          FILE_NAME=${BASE_NAME}.tar.gz
-        fi
+        BASE_NAME=gitdeps_${VERSION}_linux_${OS_ARCH}
+        FILE_NAME=${BASE_NAME}.tar.gz
+
+    - name: get sys info (MacOS)
+      shell: bash
+      if: os.runner == 'macOS'
+      run:
+        set -e
+        cd "`dirname "$0"`"
+        VERSION="0.2.2"
+        
+        RELEASES_URL="https://github.com/Nelonn/gitdeps/releases/download"
+        OS_ARCH=$(echo `uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/`)
+        
+        BASE_NAME=gitdeps_${VERSION}_linux_${OS_ARCH}
+        FILE_NAME=${BASE_NAME}.zip
 
     - name: get sys info (Windows)
       shell: pwsh
@@ -29,13 +38,14 @@ runs:
       run: |
         $extractPath = ".gitdeps"
         $arch = (Get-WmiObject Win32_Processor).Architecture
+        $VERSION = "0.2.2"
         
         if ($arch -eq 12) {
-            $url = "https://github.com/Nelonn/gitdeps/releases/download/v0.2.2/gitdeps_0.2.2_windows_arm64.zip"
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_arm64.zip"
         } elseif ($arch -eq 9) {
-            $url = "https://github.com/Nelonn/gitdeps/releases/download/v0.2.2/gitdeps_0.2.2_windows_amd64.zip"
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_amd64.zip"
         } elseif ($arch -eq 0) {
-            $url = "https://github.com/Nelonn/gitdeps/releases/download/v0.2.2/gitdeps_0.2.2_windows_386.zip"
+            $url = "https://github.com/Nelonn/gitdeps/releases/download/v$VERSION/gitdeps_$VERSION_windows_386.zip"
         } else {
             Write-Error "Unsupported architecture: $arch"
             exit 1
@@ -43,7 +53,7 @@ runs:
     # DOWNLOAD PART
     - name: download archive (Unix)
       shell: bash
-      if: os.runner == 'Unix'
+      if: os.runner != 'Windows'
       run: |
         echo Downloading ${RELEASES_URL}/v${VERSION}/${FILE_NAME}
         curl --create-dirs -LO --output-dir .gitdeps ${RELEASES_URL}/v${VERSION}/${FILE_NAME}
@@ -59,7 +69,7 @@ runs:
       if: os.runner == 'Linux'
       run: tar -xf .gitdeps/${FILE_NAME} -C .gitdeps
 
-    - name: extract archive (Linux)
+    - name: extract archive (macOS)
       shell: bash
       if: os.runner == 'macOS'
       run: unzip .gitdeps/${FILE_NAME} -d .gitdeps
