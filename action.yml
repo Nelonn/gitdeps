@@ -8,7 +8,7 @@ inputs:
   gitdeps_args:
     description: 'add gitdeps arguments'
     required: false
-    default: ''
+
 runs:
   using: 'composite'
   steps:
@@ -32,7 +32,6 @@ runs:
       shell: bash
       if: runner.os == 'macOS'
       run: |
-        set -e
         VERSION="${{ inputs.gitdeps_ver }}"
         OS_ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/amd64/')
         BASE_NAME="gitdeps_${VERSION}_darwin_${OS_ARCH}"
@@ -98,7 +97,9 @@ runs:
     - name: run gitdeps (Unix)
       shell: bash
       if: runner.os != 'Windows'
-      run: .gitdeps/${BASE_NAME}/gitdeps ${{ inputs.gitdeps_args }}
+      env:
+        GITDEPS_ARGS: ${{ inputs.gitdeps_args }}
+      run: .gitdeps/${BASE_NAME}/gitdeps $GITDEPS_ARGS
 
     - name: run gitdeps (Windows)
       shell: pwsh
