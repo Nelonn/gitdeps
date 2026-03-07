@@ -1,5 +1,11 @@
 name: check_action
 on:
+  push:
+    paths:
+      - action.yml
+  pull_request:
+    paths:
+      - action.yml
 
 jobs:
   test_action:
