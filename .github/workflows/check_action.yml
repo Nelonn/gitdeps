@@ -1,0 +1,21 @@
+name: check_action
+on:
+  push:
+    paths:
+      - action.yml
+  pull_request:
+    paths:
+      - action.yml
+
+jobs:
+  test_action:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check gitdeps action on ${{ matrix.os }}
+        uses: ./
