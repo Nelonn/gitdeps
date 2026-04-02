@@ -64,6 +64,7 @@ Module declaration structure:
 - `branch`: Fetches the latest commit on this branch.
 - `commit`: Checksum of commit that you want to use (usually SHA-1)
 - `tag`: Fetches a specific tag.
+- `dev`: Do a full checkout of repository for development
 - `patches`: An optional array of paths to patch files. Paths are relative to the gitdeps file. Patches are applied after cloning.
 - `option`: An optional array of profile names (e.g., `["cpp17", "dev"]`). The dependency is cloned only if at least one of the listed profiles is specified using `--enable` or by parent gitdeps file. If empty or omitted, the dependency is always cloned.
 - `define`: An optional array of profiles to pass down to this dependency's own gitdeps.json file. Profiles specified via command-line arguments only apply to the root configuration.

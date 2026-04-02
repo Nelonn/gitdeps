@@ -254,7 +254,26 @@ func UpdateDeps(workingDir string, opts *Options) error {
 			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 		}
 
-		{
+		if module.Dev {
+			err := RunCommand(fullPath, "git", "fetch", "origin")
+			if err != nil {
+				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+			}
+
+			var args []string
+			args = append(args, "checkout")
+			if module.Branch != "" {
+				args = append(args, module.Branch)
+			} else if module.Commit != "" {
+				args = append(args, module.Commit)
+			} else if module.Tag != "" {
+				args = append(args, module.Tag)
+			}
+			err = RunCommand(fullPath, "git", args...)
+			if err != nil {
+				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+			}
+		} else {
 			var args []string
 			args = append(args, "fetch")
 			if !opts.deep {
@@ -272,17 +291,17 @@ func UpdateDeps(workingDir string, opts *Options) error {
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
 			}
-		}
 
-		err = RunCommand(fullPath, "git", "reset", "--hard", "FETCH_HEAD")
-		if err != nil {
-			return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
-		}
-
-		if !opts.noClean {
-			err = RunCommand(fullPath, "git", "clean", "-fd")
+			err = RunCommand(fullPath, "git", "reset", "--hard", "FETCH_HEAD")
 			if err != nil {
 				return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+			}
+
+			if !opts.noClean {
+				err = RunCommand(fullPath, "git", "clean", "-fd")
+				if err != nil {
+					return errors.New(depsFile + ": '" + modulePath + "': " + err.Error())
+				}
 			}
 		}
 
@@ -332,6 +351,7 @@ type Module struct {
 	Branch  string   `json:"branch,omitempty"`
 	Commit  string   `json:"commit,omitempty"`
 	Tag     string   `json:"tag,omitempty"`
+	Dev     bool     `json:"dev,omitempty"`
 	Patches []string `json:"patches,omitempty"`
 	Option  []string `json:"option,omitempty"`
 	Define  []string `json:"define,omitempty"`
